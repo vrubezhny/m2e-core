@@ -420,20 +420,66 @@ public abstract class AbstractJavaProjectConfigurator extends AbstractProjectCon
 
   private IClasspathEntryDescriptor getEnclosingEntryDescriptor(IClasspathDescriptor classpath, IPath fullPath) {
     for(IClasspathEntryDescriptor cped : classpath.getEntryDescriptors()) {
-      if(cped.getPath().isPrefixOf(fullPath)) {
+      IPath cpedPath = cped.getPath();
+      System.out.println("CPED Path: " + cpedPath.toString() + ", OS: " + cpedPath.toString() + ", Portable: " + cpedPath.toPortableString()); 
+      System.out.println("Full Path: " + fullPath.toString() + ", OS: " + fullPath.toString() + ", Portable: " + fullPath.toPortableString()); 
+      System.out.println("isPrefixOf: " + cpedPath.isPrefixOf(fullPath) + ", OS: " + fullPath.toOSString().startsWith(cpedPath.toOSString()) 
+    		  + ", Portable: " + fullPath.toPortableString().startsWith(cpedPath.toPortableString())); 
+      System.out.println("isPrefixOf *: " + pathIsPrefixOf(cpedPath, fullPath)); 
+
+      if(pathIsPrefixOf(cped.getPath(), fullPath)) {
         return cped;
       }
     }
     return null;
   }
 
+  private boolean pathIsPrefixOf(IPath path, IPath fullPath) {
+	  path = new Path(path.toString().replace('\\', '/'));
+	  fullPath = new Path(fullPath.toString().replace('\\', '/'));
+
+	  if (path.segmentCount() > fullPath.segmentCount()) {
+		  return false;
+	  }
+
+	  for (int i = 0; i < path.segmentCount(); i++) {
+		  if (!path.segment(i).equals(fullPath.segment(i))) {
+			  return false;
+		  }
+	  }
+	  return true;
+  }
+
   private IClasspathEntryDescriptor getEntryDescriptor(IClasspathDescriptor classpath, IPath fullPath) {
     for(IClasspathEntryDescriptor cped : classpath.getEntryDescriptors()) {
-      if(cped.getPath().equals(fullPath)) {
+        IPath cpedPath = cped.getPath();
+        System.out.println("CPED Path: " + cpedPath.toString() + ", OS: " + cpedPath.toString() + ", Portable: " + cpedPath.toPortableString()); 
+        System.out.println("Full Path: " + fullPath.toString() + ", OS: " + fullPath.toString() + ", Portable: " + fullPath.toPortableString()); 
+        System.out.println("equals: " + cpedPath.equals(fullPath) + ", OS: " + fullPath.toOSString().equals(cpedPath.toOSString()) 
+      		  + ", Portable: " + fullPath.toPortableString().equals(cpedPath.toPortableString())); 
+        System.out.println("pathEqualsTo *: " + pathEqualsTo(cpedPath, fullPath)); 
+   	
+      if(pathEqualsTo(cped.getPath(), fullPath)) {
         return cped;
       }
     }
     return null;
+  }
+
+  private boolean pathEqualsTo(IPath path, IPath fullPath) {
+	  path = new Path(path.toString().replace('\\', '/'));
+	  fullPath = new Path(fullPath.toString().replace('\\', '/'));
+	  
+	  if (path.segmentCount() != fullPath.segmentCount()) {
+		  return false;
+	  }
+	  
+	  for (int i = 0; i < path.segmentCount(); i++) {
+		  if (!path.segment(i).equals(fullPath.segment(i))) {
+			  return false;
+		  }
+	  }
+	  return true;
   }
 
   private void addResourceDirs(IClasspathDescriptor classpath, IProject project, MavenProject mavenProject,
